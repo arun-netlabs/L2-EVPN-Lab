@@ -1,0 +1,6 @@
+clab-*/
+*.tar.xz
+*.tar.gz
+*.tar
+.DS_Store
+*.bak

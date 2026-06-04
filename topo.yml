@@ -1,0 +1,54 @@
+name: l2evpn
+
+mgmt:
+  network: clab-mgmt
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  nodes:
+    spine:
+      kind: ceos
+      image: ceos:latest
+      startup-config: configs/spine.cfg
+      mgmt-ipv4: 172.20.20.10
+
+    leaf1:
+      kind: ceos
+      image: ceos:latest
+      startup-config: configs/leaf1.cfg
+      mgmt-ipv4: 172.20.20.11
+
+    leaf2:
+      kind: ceos
+      image: ceos:latest
+      startup-config: configs/leaf2.cfg
+      mgmt-ipv4: 172.20.20.12
+
+    host1:
+      kind: linux
+      image: ghcr.io/hellt/network-multitool
+      mgmt-ipv4: 172.20.20.21
+      exec:
+        - ip addr add 192.168.10.1/24 dev eth1
+        - ip link set eth1 up
+
+    host2:
+      kind: linux
+      image: ghcr.io/hellt/network-multitool
+      mgmt-ipv4: 172.20.20.22
+      exec:
+        - ip addr add 192.168.10.2/24 dev eth1
+        - ip link set eth1 up
+
+  links:
+    # host1 <-> leaf1
+    - endpoints: ["host1:eth1", "leaf1:eth1"]
+
+    # leaf1 <-> spine
+    - endpoints: ["leaf1:eth2", "spine:eth1"]
+
+    # spine <-> leaf2
+    - endpoints: ["spine:eth2", "leaf2:eth2"]
+
+    # leaf2 <-> host2
+    - endpoints: ["leaf2:eth1", "host2:eth1"]
