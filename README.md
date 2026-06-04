@@ -116,11 +116,83 @@ L2-EVPN-Lab/
     └── destroy.sh                      # Destroy the lab
 ```
 
-## Pushing to GitHub
+---
+
+## For New Users: How to Clone and Run This Lab
+
+### Prerequisites
+
+You need a Linux VM (AlmaLinux/RHEL 9.x recommended) with:
+- **16GB+ RAM** and **50GB+ disk**
+- Docker CE installed
+- Containerlab installed
+- **cEOS-lab image** (`cEOS-lab.tar.xz`) — this file is NOT included in this repo
+
+> **Note:** The cEOS-lab image is proprietary Arista software. You must download it
+> separately from [arista.com](https://www.arista.com/en/support/software-download)
+> (requires an Arista account). Choose **cEOS-lab** under the EOS section.
+
+### Step 1: Install Docker and Containerlab
+
+See [cEOS-Containerlab-Setup-Guide.md](cEOS-Containerlab-Setup-Guide.md) for detailed steps.
 
 ```bash
-# Create a repo on github.com, then:
-git remote add origin https://github.com/<your-username>/L2-EVPN-Lab.git
-git branch -M main
-git push -u origin main
+# Quick install (if not already installed)
+# Docker
+dnf install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+systemctl start docker && systemctl enable docker
+
+# Containerlab
+curl -sL https://containerlab.dev/setup | bash -s -- all
+```
+
+### Step 2: Clone This Repository
+
+```bash
+git clone https://github.com/arun-netlabs/L2-EVPN-Lab.git
+cd L2-EVPN-Lab
+```
+
+### Step 3: Import the cEOS-lab Image
+
+```bash
+# Place your cEOS-lab.tar.xz file in the current directory, then:
+./scripts/import-image.sh cEOS-lab.tar.xz
+```
+
+### Step 4: Deploy the Lab
+
+```bash
+./scripts/deploy.sh
+```
+
+### Step 5: Verify
+
+```bash
+# Check all nodes are running
+clab inspect --topo topo.yml
+
+# Test end-to-end connectivity
+docker exec clab-l2evpn-host1 ping -c 4 192.168.10.2
+```
+
+### Step 6: Access the Nodes
+
+```bash
+# Switches (EOS CLI)
+docker exec -it clab-l2evpn-spine Cli
+docker exec -it clab-l2evpn-leaf1 Cli
+docker exec -it clab-l2evpn-leaf2 Cli
+
+# Hosts (bash)
+docker exec -it clab-l2evpn-host1 bash
+docker exec -it clab-l2evpn-host2 bash
+```
+
+### Step 7: Destroy When Done
+
+```bash
+./scripts/destroy.sh
 ```
